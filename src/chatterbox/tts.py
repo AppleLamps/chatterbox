@@ -179,6 +179,43 @@ class ChatterboxTTS:
 
         return cls.from_local(Path(local_path).parent, device)
 
+    def optimize_for_cpu(self):
+        """
+        Applies dynamic quantization and JIT scripting to the models for faster CPU inference.
+        """
+        print("Optimizing models for CPU execution...")
+        
+        # Ensure models are on the CPU
+        self.t3 = self.t3.to("cpu")
+        self.s3gen = self.s3gen.to("cpu")
+        self.ve = self.ve.to("cpu")
+        self.device = "cpu"
+
+        # Models to be quantized and scripted
+        # Note: We apply quantization before scripting.
+        # The `ve` model's LSTM is a good candidate.
+        # For s3gen and t3, we target Linear layers.
+        models_to_optimize = {'t3': self.t3, 's3gen': self.s3gen, 've': self.ve}
+        
+        for name, model in models_to_optimize.items():
+            try:
+                # Apply dynamic quantization to Linear and LSTM layers
+                quantized_model = torch.quantization.quantize_dynamic(
+                    model, {torch.nn.Linear, torch.nn.LSTM}, dtype=torch.qint8
+                )
+                
+                # Apply JIT scripting
+                scripted_model = torch.jit.script(quantized_model)
+                
+                # Replace the original model with the optimized one
+                setattr(self, name, scripted_model)
+                print(f"Successfully optimized {name} model.")
+
+            except Exception as e:
+                print(f"Could not optimize {name} model: {e}")
+        
+        print("CPU optimization complete.")
+
     def prepare_conditionals(self, wav_fpath, exaggeration=0.5):
         ## Load reference wav
         s3gen_ref_wav, _sr = librosa.load(wav_fpath, sr=S3GEN_SR)

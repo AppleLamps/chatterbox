@@ -47,8 +47,14 @@ def get_cached_model(progress=None):
                 
                 if progress:
                     progress(0.3, desc="Downloading model files...")
-                # The actual model loading happens here
+                
                 _model_cache = ChatterboxTTS.from_pretrained(DEVICE)
+                
+                # If on CPU, apply optimizations
+                if DEVICE == "cpu":
+                    if progress:
+                        progress(0.6, desc="Applying CPU optimizations...")
+                    _model_cache.optimize_for_cpu()
                 
                 if progress:
                     progress(0.8, desc="Finalizing model setup...")
