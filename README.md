@@ -71,7 +71,82 @@ ta.save("test-2.wav", wav, model.sr)
 ```
 See `example_tts.py` and `example_vc.py` for more examples.
 
-# Supported Lanugage
+# Optimized Gradio Web Interface
+
+This repository includes an optimized Gradio web interface (`gradio_tts_app.py`) with enhanced performance and user experience features:
+
+## Features
+- **Global Model Caching**: Model loads once and stays cached across all user sessions for faster generation
+- **Parameter Presets**: Quick access to README-recommended settings:
+  - **General Use**: Default settings (`exaggeration=0.5`, `cfg_weight=0.5`)
+  - **Expressive/Dramatic**: Higher emotion (`exaggeration=0.7`, `cfg_weight=0.3`)
+  - **Fast Speaker**: Improved pacing for fast speakers (`cfg_weight=0.3`)
+- **Real-time Status Updates**: Shows loading progress and generation status
+- **Advanced Parameters**: Fine-tune temperature, sampling, and other generation settings
+- **Clean Interface**: Suppressed unnecessary warnings for better user experience
+
+## Quick Start
+
+### Prerequisites
+```bash
+# Install required dependencies
+pip install gradio
+pip install chatterbox-tts
+
+# Or install from source (recommended for latest features)
+git clone https://github.com/resemble-ai/chatterbox.git
+cd chatterbox
+pip install -e .
+pip install gradio
+```
+
+### Running the Web Interface
+```bash
+# Navigate to the chatterbox directory
+cd chatterbox
+
+# Start the optimized Gradio app
+python gradio_tts_app.py
+```
+
+The interface will start and display:
+```
+* Running on local URL:  http://127.0.0.1:7860
+```
+
+Open your browser and navigate to `http://127.0.0.1:7860` to use the interface.
+
+### First-Time Usage
+1. **Model Loading**: The model will download and cache automatically on first use (requires ~3GB download)
+2. **GPU Detection**: Automatically uses CUDA if available, falls back to CPU
+3. **Text Input**: Enter any text (no character limit)
+4. **Voice Reference** (optional): Upload an audio file for voice cloning
+5. **Parameter Presets**: Choose from preset configurations or use "Custom" for manual control
+6. **Generate**: Click "Generate" to create your audio
+
+### Performance Tips
+- **First generation** may take 30-60 seconds (model loading + generation)
+- **Subsequent generations** are much faster (~15-30 seconds) thanks to model caching
+- **GPU usage** significantly speeds up generation if CUDA is available
+- **Parameter presets** provide optimal settings for different use cases
+
+## Advanced Usage
+
+### Custom Parameters
+Use the "Advanced Parameters" section to fine-tune:
+- **Temperature**: Controls randomness (0.8 default)
+- **min_p**: Modern sampling method (0.05 recommended)
+- **top_p**: Classic sampling (1.0 to disable)
+- **Repetition Penalty**: Reduces repetitive output (1.2 default)
+- **Random Seed**: For reproducible outputs (0 for random)
+
+### Voice Reference Audio
+- Upload WAV, MP3, or other audio formats
+- Shorter clips (5-30 seconds) work best
+- Clear speech without background noise is ideal
+- The model will clone the voice characteristics while speaking your text
+
+# Supported Language
 Currenlty only English.
 
 # Acknowledgements
