@@ -181,7 +181,7 @@ class ChatterboxTTS:
 
     def optimize_for_cpu(self):
         """
-        Applies dynamic quantization and JIT scripting to the models for faster CPU inference.
+        Applies dynamic quantization and torch.compile to the models for faster CPU inference.
         """
         print("Optimizing models for CPU execution...")
         
@@ -191,8 +191,8 @@ class ChatterboxTTS:
         self.ve = self.ve.to("cpu")
         self.device = "cpu"
 
-        # Models to be quantized and scripted
-        # Note: We apply quantization before scripting.
+        # Models to be quantized and compiled
+        # Note: We apply quantization before compilation.
         # The `ve` model's LSTM is a good candidate.
         # For s3gen and t3, we target Linear layers.
         models_to_optimize = {'t3': self.t3, 's3gen': self.s3gen, 've': self.ve}
@@ -204,12 +204,12 @@ class ChatterboxTTS:
                     model, {torch.nn.Linear, torch.nn.LSTM}, dtype=torch.qint8
                 )
                 
-                # Apply JIT scripting
-                scripted_model = torch.jit.script(quantized_model)
+                # Apply torch.compile to the quantized model
+                compiled_model = torch.compile(quantized_model, mode="reduce-overhead", fullgraph=True)
                 
                 # Replace the original model with the optimized one
-                setattr(self, name, scripted_model)
-                print(f"Successfully optimized {name} model.")
+                setattr(self, name, compiled_model)
+                print(f"Successfully optimized {name} model with quantization and compilation.")
 
             except Exception as e:
                 print(f"Could not optimize {name} model: {e}")
